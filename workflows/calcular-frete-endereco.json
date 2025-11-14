@@ -1,0 +1,152 @@
+{
+  "name": "Calcular Frete por Endereço - Montes Claros",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "calcular-frete",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook - Receber Endereço",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "calcular-frete-montes-claros"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Recebe os dados do endereço\nconst rua = $input.item.json.rua || '';\nconst numero = $input.item.json.numero || '';\nconst bairro = $input.item.json.bairro || '';\nconst cidade = 'Montes Claros';\nconst estado = 'MG';\n\n// Validação básica\nif (!rua || !numero || !bairro) {\n  return {\n    sucesso: false,\n    erro: 'Dados incompletos. Envie: rua, numero e bairro',\n    mensagem: 'Por favor, informe o endereço completo: rua, número e bairro'\n  };\n}\n\n// Normaliza o nome do bairro (remove acentos, lowercase)\nconst normalizarTexto = (texto) => {\n  return texto\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .trim();\n};\n\nconst bairroNormalizado = normalizarTexto(bairro);\n\n// Retorna os dados processados\nreturn {\n  endereco_completo: `${rua}, ${numero} - ${bairro}, ${cidade}/${estado}`,\n  rua: rua.trim(),\n  numero: numero.toString().trim(),\n  bairro: bairro.trim(),\n  bairro_normalizado: bairroNormalizado,\n  cidade,\n  estado,\n  validado: true\n};"
+      },
+      "id": "validar-endereco",
+      "name": "Validar Endereço",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Tabela de frete por bairro de Montes Claros, MG\n// VOCÊ PODE CUSTOMIZAR OS VALORES E ADICIONAR MAIS BAIRROS\nconst tabelaFrete = {\n  // Zona Central - Frete mais barato\n  'centro': 10.00,\n  'vila guilhermina': 10.00,\n  'todos os santos': 12.00,\n  'sao jose': 12.00,\n  'morrinhos': 12.00,\n  \n  // Zona Norte\n  'major prates': 15.00,\n  'jardim panorama': 15.00,\n  'sao luiz': 15.00,\n  'jardim sao luiz': 15.00,\n  'ibituruna': 18.00,\n  \n  // Zona Sul\n  'santo expedito': 15.00,\n  'sao judas tadeu': 15.00,\n  'cidade nova': 15.00,\n  'independencia': 15.00,\n  'melo': 18.00,\n  \n  // Zona Leste\n  'alterosa': 18.00,\n  'jardim alterosa': 18.00,\n  'planalto': 20.00,\n  'ciro dos anjos': 20.00,\n  \n  // Zona Oeste\n  'maracanã': 18.00,\n  'sumaré': 18.00,\n  'canelas': 20.00,\n  'santa rita': 20.00,\n  'vila atletico': 18.00,\n  \n  // Bairros mais distantes\n  'distrito industrial': 25.00,\n  'village do lago': 25.00,\n  'santa eugenia': 22.00,\n  'jardim brasil': 22.00,\n  'bela vista': 20.00,\n  'sagrada familia': 18.00,\n  'carmelo': 20.00,\n  'roxo verde': 22.00\n};\n\n// Pega os dados validados do node anterior\nconst item = $input.item.json;\n\n// Se houve erro na validação, retorna o erro\nif (item.sucesso === false) {\n  return item;\n}\n\nconst bairroNormalizado = item.bairro_normalizado;\n\n// Busca o valor do frete na tabela\nlet valorFrete = tabelaFrete[bairroNormalizado];\n\n// Se o bairro não está na tabela, usa valor padrão\nif (valorFrete === undefined) {\n  valorFrete = 20.00; // Valor padrão para bairros não cadastrados\n  \n  return {\n    sucesso: true,\n    endereco_completo: item.endereco_completo,\n    rua: item.rua,\n    numero: item.numero,\n    bairro: item.bairro,\n    cidade: item.cidade,\n    estado: item.estado,\n    valor_frete: valorFrete,\n    aviso: `Bairro \"${item.bairro}\" não encontrado na tabela. Aplicado valor padrão.`,\n    mensagem: `Frete calculado com sucesso! Valor: R$ ${valorFrete.toFixed(2)}`\n  };\n}\n\n// Retorna o resultado com o valor do frete\nreturn {\n  sucesso: true,\n  endereco_completo: item.endereco_completo,\n  rua: item.rua,\n  numero: item.numero,\n  bairro: item.bairro,\n  cidade: item.cidade,\n  estado: item.estado,\n  valor_frete: valorFrete,\n  mensagem: `Frete calculado com sucesso! Valor: R$ ${valorFrete.toFixed(2)}`\n};"
+      },
+      "id": "calcular-frete",
+      "name": "Calcular Frete por Bairro",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "sucesso",
+              "value": "={{ $json.sucesso }}"
+            },
+            {
+              "name": "mensagem",
+              "value": "={{ $json.mensagem }}"
+            },
+            {
+              "name": "endereco_completo",
+              "value": "={{ $json.endereco_completo }}"
+            },
+            {
+              "name": "bairro",
+              "value": "={{ $json.bairro }}"
+            },
+            {
+              "name": "cidade",
+              "value": "={{ $json.cidade }}"
+            },
+            {
+              "name": "estado",
+              "value": "={{ $json.estado }}"
+            }
+          ],
+          "number": [
+            {
+              "name": "valor_frete",
+              "value": "={{ $json.valor_frete }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-sucesso",
+      "name": "Set - Retorno de Sucesso",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Receber Endereço": {
+      "main": [
+        [
+          {
+            "node": "Validar Endereço",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validar Endereço": {
+      "main": [
+        [
+          {
+            "node": "Calcular Frete por Bairro",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Frete por Bairro": {
+      "main": [
+        [
+          {
+            "node": "Set - Retorno de Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set - Retorno de Sucesso": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-14T00:00:00.000Z",
+  "versionId": "1"
+}

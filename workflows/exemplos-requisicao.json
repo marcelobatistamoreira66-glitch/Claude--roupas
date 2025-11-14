@@ -1,0 +1,123 @@
+{
+  "exemplos_requisicao": [
+    {
+      "descricao": "Endereço no Centro (frete mais barato)",
+      "metodo": "POST",
+      "body": {
+        "rua": "Avenida Doutor Ruy Braga",
+        "numero": "123",
+        "bairro": "Centro"
+      },
+      "resposta_esperada": {
+        "sucesso": true,
+        "valor_frete": 10,
+        "mensagem": "Frete calculado com sucesso! Valor: R$ 10.00"
+      }
+    },
+    {
+      "descricao": "Endereço em São Luiz",
+      "metodo": "POST",
+      "body": {
+        "rua": "Rua Doutor Veloso",
+        "numero": "456",
+        "bairro": "São Luiz"
+      },
+      "resposta_esperada": {
+        "sucesso": true,
+        "valor_frete": 15,
+        "mensagem": "Frete calculado com sucesso! Valor: R$ 15.00"
+      }
+    },
+    {
+      "descricao": "Endereço no Ibituruna",
+      "metodo": "POST",
+      "body": {
+        "rua": "Rua A",
+        "numero": "789",
+        "bairro": "Ibituruna"
+      },
+      "resposta_esperada": {
+        "sucesso": true,
+        "valor_frete": 18,
+        "mensagem": "Frete calculado com sucesso! Valor: R$ 18.00"
+      }
+    },
+    {
+      "descricao": "Endereço no Village do Lago (mais distante)",
+      "metodo": "POST",
+      "body": {
+        "rua": "Avenida Principal",
+        "numero": "1000",
+        "bairro": "Village do Lago"
+      },
+      "resposta_esperada": {
+        "sucesso": true,
+        "valor_frete": 25,
+        "mensagem": "Frete calculado com sucesso! Valor: R$ 25.00"
+      }
+    },
+    {
+      "descricao": "Bairro não cadastrado (valor padrão)",
+      "metodo": "POST",
+      "body": {
+        "rua": "Rua Teste",
+        "numero": "100",
+        "bairro": "Bairro Novo"
+      },
+      "resposta_esperada": {
+        "sucesso": true,
+        "valor_frete": 20,
+        "aviso": "Bairro \"Bairro Novo\" não encontrado na tabela. Aplicado valor padrão."
+      }
+    },
+    {
+      "descricao": "Teste com bairro com acentos (deve normalizar)",
+      "metodo": "POST",
+      "body": {
+        "rua": "Rua São João",
+        "numero": "200",
+        "bairro": "São José"
+      },
+      "resposta_esperada": {
+        "sucesso": true,
+        "valor_frete": 12,
+        "mensagem": "Frete calculado com sucesso! Valor: R$ 12.00"
+      }
+    },
+    {
+      "descricao": "Erro: Dados incompletos (sem bairro)",
+      "metodo": "POST",
+      "body": {
+        "rua": "Rua Teste",
+        "numero": "100"
+      },
+      "resposta_esperada": {
+        "sucesso": false,
+        "erro": "Dados incompletos. Envie: rua, numero e bairro",
+        "mensagem": "Por favor, informe o endereço completo: rua, número e bairro"
+      }
+    },
+    {
+      "descricao": "Erro: Dados incompletos (sem número)",
+      "metodo": "POST",
+      "body": {
+        "rua": "Rua Teste",
+        "bairro": "Centro"
+      },
+      "resposta_esperada": {
+        "sucesso": false,
+        "erro": "Dados incompletos. Envie: rua, numero e bairro"
+      }
+    }
+  ],
+  "curl_examples": {
+    "basico": "curl -X POST 'SUA_URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Avenida Doutor Ruy Braga\", \"numero\": \"123\", \"bairro\": \"Centro\"}'",
+    "com_acentos": "curl -X POST 'SUA_URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Rua São João\", \"numero\": \"200\", \"bairro\": \"São José\"}'",
+    "bairro_distante": "curl -X POST 'SUA_URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Avenida Principal\", \"numero\": \"1000\", \"bairro\": \"Village do Lago\"}'"
+  },
+  "instrucoes": {
+    "passo_1": "Substitua 'SUA_URL_DO_WEBHOOK' pela URL real que aparece no node Webhook do n8n",
+    "passo_2": "Execute qualquer um dos comandos curl acima para testar",
+    "passo_3": "Ou use o Postman/Insomnia importando os exemplos acima"
+  }
+}
