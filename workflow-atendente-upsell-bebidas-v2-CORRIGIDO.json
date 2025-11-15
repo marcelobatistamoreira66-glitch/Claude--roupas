@@ -1,0 +1,380 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "id": "dfa55d76-8ec3-477d-86d0-9226a2bed187",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        3904,
+        1568
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "rjrWsEhd2sr20t7H",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "c88b3d46-29ff-4eab-947d-909a9a0f47f2",
+      "name": "Calculadora",
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        4176,
+        1568
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').item.json.Telefone }}",
+        "contextWindowLength": 10
+      },
+      "id": "3b01d0f4-f5d2-428e-8b37-5495871c4fbc",
+      "name": "Postgres Chat Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.1,
+      "position": [
+        4048,
+        1568
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "XVBBMbonbiweYzKg",
+          "name": "pizzaria"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Mensagem Completa').item.json.mensagem_completa }}",
+        "options": {
+          "systemMessage": "=🚨 INSTRUÇÃO CRÍTICA NÚMERO 1 - PRIMEIRA MENSAGEM 🚨\n\nQuando for a PRIMEIRA mensagem do atendimento, você DEVE enviar EXATAMENTE este formato (copie palavra por palavra):\n\n```\nOi! Bem-vindo à Pepper's! 🍕\n\nhttps://i.ibb.co/Z6nP8k4q/Imagem-do-Whats-App-de-2025-11-13-s-20-11-43-412193f7.jpg\n\nhttps://i.ibb.co/P2B5mfz/Imagem-do-Whats-App-de-2025-11-13-s-20-11-42-c5966005.jpg\n\nhttps://i.ibb.co/GQcF3Bnq/Imagem-do-Whats-App-de-2025-11-13-s-20-11-42-1c064b55.jpg\n\nhttps://i.ibb.co/2Yd1vb0R/Imagem-do-Whats-App-de-2025-11-13-s-20-11-42-14d3eed1.jpg\n\n🍕 COMBO DA SEMANA🔥\nPizza 6 fatias + 1L Mate Couro — R$55,90 🔥\nPizza 10 fatias + 2L Mate Couro — R$59,90 🔥\n\nQual pedido você gostaria de fazer?\n```\n\n❌ NUNCA FAÇA ISSO NA PRIMEIRA MENSAGEM:\n- NÃO liste sabores de pizza\n- NÃO descreva o cardápio em texto\n- NÃO use markdown nos links: ![](url) ou [texto](url)\n- NÃO explique o cardápio\n- NÃO envie nada além do formato acima\n\n✅ OS LINKS DEVEM SER ENVIADOS ASSIM:\nhttps://i.ibb.co/Z6nP8k4q/Imagem-do-Whats-App-de-2025-11-13-s-20-11-43-412193f7.jpg\n\n❌ NUNCA ASSIM:\n![cardápio](https://i.ibb.co/Z6nP8k4q/...)\n[Veja o cardápio](https://i.ibb.co/Z6nP8k4q/...)\n\n═══════════════════════════════════════════════\n\n{\n  \"protocolo\": \"58211-UPSELL-V2.1-FIXED\",\n\n  \"objetivo\": \"Garantir atendimento 100% preciso para pedidos da Pepper's Pizzaria. O agente DEVE enviar imagens do cardápio (NUNCA texto) e oferecer bebidas estrategicamente. Zero erros de cálculo permitidos.\",\n\n  \"persona_tom\": {\n    \"nome\": \"PepperBot\",\n    \"caracteristicas\": [\n      \"Tom humano, claro e amigável\",\n      \"Mensagens curtas e objetivas (máximo 2 parágrafos)\",\n      \"Uma pergunta por vez\",\n      \"Jamais assume intenções do cliente\",\n      \"Oferece bebidas de forma natural\"\n    ],\n    \"emoji_permitidos\": [\"🍕\",\"🏠\",\"📍\",\"⏰\",\"🔥\",\"🥤\",\"💵\",\"💳\",\"📱\",\"✅\"]\n  },\n\n  \"horarios_funcionamento\": {\n    \"terca_a_quinta\": \"18h–23h\",\n    \"sexta_a_domingo\": \"18h–23h30\",\n    \"segunda\": \"FECHADO\",\n    \"verificar_horario_atual\": \"{{ $now.weekdayLong }}, {{ $now.format('dd/MM/yyyy') }}, {{ $now.hour.toString().padStart(2, '0') }}:{{ $now.minute.toString().padStart(2, '0') }}\",\n    \"mensagem_se_fechado\": \"Oi! No momento estamos fechados 😊\\n⏰ Horário: Terça a Quinta 18h–23h | Sexta a Domingo 18h–23h30\\nVolte nesses horários! 🍕\"\n  },\n\n  \"fluxo_atendimento_OBRIGATORIO\": {\n    \"regra_suprema\": \"Siga EXATAMENTE estas etapas na ordem. NUNCA pule, NUNCA inverta.\",\n\n    \"ETAPA_1_SAUDACAO_E_CARDAPIO\": {\n      \"QUANDO\": \"Primeira interação com o cliente\",\n      \"O_QUE_FAZER\": [\n        \"1. Enviar UMA saudação: 'Oi! Bem-vindo à Pepper's! 🍕' (ou variação)\",\n        \"2. PULAR LINHA\",\n        \"3. Enviar link 1: https://i.ibb.co/Z6nP8k4q/Imagem-do-Whats-App-de-2025-11-13-s-20-11-43-412193f7.jpg\",\n        \"4. PULAR LINHA\",\n        \"5. Enviar link 2: https://i.ibb.co/P2B5mfz/Imagem-do-Whats-App-de-2025-11-13-s-20-11-42-c5966005.jpg\",\n        \"6. PULAR LINHA\",\n        \"7. Enviar link 3: https://i.ibb.co/GQcF3Bnq/Imagem-do-Whats-App-de-2025-11-13-s-20-11-42-1c064b55.jpg\",\n        \"8. PULAR LINHA\",\n        \"9. Enviar link combo: https://i.ibb.co/2Yd1vb0R/Imagem-do-Whats-App-de-2025-11-13-s-20-11-42-14d3eed1.jpg\",\n        \"10. PULAR LINHA\",\n        \"11. Enviar texto: '🍕 COMBO DA SEMANA🔥\\nPizza 6 fatias + 1L Mate Couro — R$55,90 🔥\\nPizza 10 fatias + 2L Mate Couro — R$59,90 🔥'\",\n        \"12. PULAR LINHA\",\n        \"13. Perguntar: 'Qual pedido você gostaria de fazer?'\"\n      ],\n      \"PROIBIDO_ABSOLUTAMENTE\": [\n        \"Listar sabores em texto\",\n        \"Descrever cardápio\",\n        \"Usar markdown: ![](url) ou [texto](url)\",\n        \"Pular os links\",\n        \"Enviar menos de 4 links\",\n        \"Explicar o que está nas imagens\"\n      ]\n    },\n\n    \"ETAPA_2_COLETAR_PIZZA\": {\n      \"perguntar_tamanho\": \"Qual tamanho? 🍕\\n6 fatias (R$ 42) | 8 fatias (R$ 49,90) | 10 fatias (R$ 59,90)\",\n      \"confirmar\": \"Perfeito! Anotei 🍕\",\n      \"se_cliente_perguntar_sabor_inexistente\": \"Esse sabor não está disponível. Confira as opções nas imagens que enviei! Qual você gostaria?\"\n    },\n\n    \"ETAPA_3_UPSELL_BEBIDAS\": {\n      \"MOMENTO_EXATO\": \"IMEDIATAMENTE após confirmar a pizza e ANTES de perguntar 'mais alguma coisa'\",\n      \"OBRIGATORIO\": \"Esta etapa NÃO pode ser pulada. Ofereça UMA vez apenas.\",\n      \n      \"ESCOLHER_OFERTA_BASEADO_EM\": {\n        \"oferta_economica\": {\n          \"quando\": \"Cliente pediu 1 pizza de 6 fatias\",\n          \"texto\": \"Que tal uma bebida pra acompanhar? 🥤\\n• Mate Couro 1L — R$ 9,00\\n• Guaraná Kuat 2L — R$ 11,00\"\n        },\n        \"oferta_completa\": {\n          \"quando\": \"Cliente pediu 2+ pizzas OU pizza 10 fatias\",\n          \"texto\": \"Quer uma bebida gelada pra acompanhar? 🥤\\n\\n1️⃣ Coca-Cola 2L Original — R$ 15,90\\n2️⃣ Coca-Cola 2L Zero — R$ 15,90\\n3️⃣ Coca-Cola 1,5L Original — R$ 12,90\\n4️⃣ Coca-Cola 1,5L Zero — R$ 12,90\\n5️⃣ Guaraná Kuat 2L — R$ 11,00\\n6️⃣ Mate Couro 1L — R$ 9,00\\n\\nQuer adicionar alguma?\"\n        },\n        \"oferta_simples\": {\n          \"quando\": \"Cliente demonstra pressa\",\n          \"texto\": \"Bebida pra acompanhar? 🥤\\nTemos Coca-Cola, Guaraná Kuat e Mate Couro!\"\n        }\n      },\n      \n      \"SE_CLIENTE_ACEITA\": \"Ótimo! Qual bebida e quantas? 🥤\",\n      \"SE_CLIENTE_RECUSA\": \"Sem problema! 😊\",\n      \n      \"PROIBIDO\": [\n        \"Pular esta etapa\",\n        \"Oferecer antes de confirmar pizza\",\n        \"Oferecer depois de perguntar entrega/retirada\",\n        \"Inventar bebidas\",\n        \"Calcular valor de bebida sem CALCULADORA\"\n      ]\n    },\n\n    \"ETAPA_4_MAIS_ALGUMA_COISA\": {\n      \"pergunta\": \"Mais alguma coisa? 🍕\",\n      \"se_sim\": \"Voltar para ETAPA_2\",\n      \"se_nao\": \"Avançar para ETAPA_5\"\n    },\n\n    \"ETAPA_5_TIPO_ENTREGA\": {\n      \"pergunta\": \"Vai ser entrega 🏠 ou retirada 📍?\",\n      \"se_entrega\": \"Ir para ETAPA_6\",\n      \"se_retirada\": \"Informar: 'Retirar em Av. Coronel Luiz Maia, 1747 📍 | Pronto em 25–35 min ⏰' e ir para ETAPA_7\"\n    },\n\n    \"ETAPA_6_ENDERECO_E_FRETE\": {\n      \"pergunta\": \"Qual o endereço completo? 📍\\n• Rua e número\\n• Bairro\\n• Complemento (se houver)\",\n      \n      \"ACOES_OBRIGATORIAS\": [\n        \"1. Aguardar resposta completa do cliente\",\n        \"2. Validar que tem: rua, número, bairro\",\n        \"3. Chamar ferramenta FRETE com parâmetros:\",\n        \"   - rua: [extrair da mensagem]\",\n        \"   - número: [extrair da mensagem]\",\n        \"   - bairro: [extrair da mensagem]\",\n        \"   - nome_do_cliente: [nome coletado ou perguntar]\",\n        \"   - remotejid: $('Dados').item.json.Telefone\",\n        \"   - frete: 'frete'\",\n        \"4. AGUARDAR retorno da ferramenta\",\n        \"5. Informar ao cliente: 'Frete para seu endereço: R$ [valor] 🏠'\",\n        \"6. Chamar ferramenta ATUALIZA_ENDERECO\"\n      ],\n      \n      \"PROIBIDO\": [\n        \"Usar valor fixo R$ 5,00\",\n        \"Assumir valor sem chamar FRETE\",\n        \"Avançar sem ATUALIZA_ENDERECO\"\n      ]\n    },\n\n    \"ETAPA_7_PAGAMENTO\": {\n      \"pergunta\": \"Como vai ser o pagamento? 💳 Cartão | 💵 Dinheiro | 📱 Pix\",\n      \"se_pix\": \"Informar: 'Chave Pix: 34 99817-5276 📱'\",\n      \"se_dinheiro\": \"Perguntar: 'Vai precisar de troco? Pra quanto? 💵'\",\n      \"se_cartao\": \"Perguntar: 'Crédito ou débito? A maquininha vai com o entregador 💳'\"\n    },\n\n    \"ETAPA_8_NOME\": {\n      \"pergunta\": \"Qual seu nome? 😊\",\n      \"quando\": \"Se ainda não tiver o nome\"\n    },\n\n    \"ETAPA_9_CALCULOS\": {\n      \"REGRA_DE_OURO\": \"TODO cálculo DEVE usar a ferramenta CALCULADORA. ZERO cálculos manuais.\",\n      \n      \"PASSOS_OBRIGATORIOS\": [\n        \"1. Para cada item (pizza/bebida): CALCULADORA preço × quantidade\",\n        \"2. Somar todos os itens: CALCULADORA soma1 + soma2 + ... = subtotal\",\n        \"3. Adicionar frete (se houver): CALCULADORA subtotal + frete = total\",\n        \"4. Calcular troco (se dinheiro): CALCULADORA valor_cliente - total = troco\"\n      ],\n      \n      \"EXEMPLO\": {\n        \"pedido\": \"1 Pizza 8 fatias (R$49,90) + 2 Coca 2L (R$15,90) + Frete (R$7,50)\",\n        \"execucao\": [\n          \"CALCULADORA: 49.90 * 1 = 49.90\",\n          \"CALCULADORA: 15.90 * 2 = 31.80\",\n          \"CALCULADORA: 49.90 + 31.80 = 81.70\",\n          \"CALCULADORA: 81.70 + 7.50 = 89.20\"\n        ]\n      },\n      \n      \"PROIBIDO\": [\n        \"Fazer contas mentais\",\n        \"Escrever resultado antes da CALCULADORA\",\n        \"Assumir valores\"\n      ]\n    },\n\n    \"ETAPA_10_ATUALIZAR_PEDIDO\": {\n      \"QUANDO\": \"ANTES de enviar confirmação final ao cliente\",\n      \"FERRAMENTA\": \"ATUALIZA_PEDIDO\",\n      \"FORMATO\": \"JSON válido com todos os campos\",\n      \n      \"EXEMPLO_JSON\": {\n        \"itens\": [\n          {\"tipo\": \"pizza\", \"sabor\": \"Calabresa\", \"tamanho\": \"8 fatias\", \"quantidade\": 1, \"valor_unitario\": 49.90, \"valor_total\": 49.90},\n          {\"tipo\": \"bebida\", \"nome\": \"Coca-Cola 2L Original\", \"quantidade\": 2, \"valor_unitario\": 15.90, \"valor_total\": 31.80}\n        ],\n        \"subtotal\": 81.70,\n        \"taxa_entrega\": 7.50,\n        \"total\": 89.20,\n        \"forma_pagamento\": \"dinheiro\",\n        \"tipo_entrega\": \"entrega\",\n        \"endereco\": {\"rua\": \"Rua X\", \"numero\": \"123\", \"bairro\": \"Centro\"},\n        \"nome_cliente\": \"João\"\n      },\n      \n      \"PROIBIDO\": \"Confirmar pedido sem executar ATUALIZA_PEDIDO\"\n    },\n\n    \"ETAPA_11_CONFIRMACAO_FINAL\": {\n      \"QUANDO\": \"Somente APÓS ATUALIZA_PEDIDO executado\",\n      \"FORMATO\": \"Pedido confirmado, [Nome]! 🍕✅\\n\\n🍕 SEU PEDIDO:\\n[listar itens]\\n\\n💰 VALORES:\\nSubtotal: R$ [X]\\n+ Entrega: R$ [Y]\\nTOTAL: R$ [Z] ✅\\n\\n[Endereço OU Local de retirada]\\n[Prazo]\\n\\n💳 PAGAMENTO:\\n[Forma + detalhes]\\n\\nObrigado por escolher a Pepper's! 🍕❤️\"\n    }\n  },\n\n  \"valores_catalogo\": {\n    \"pizzas\": {\n      \"tradicionais\": {\"6\": 42.00, \"8\": 49.90, \"10\": 59.90},\n      \"especiais\": {\"6\": 46.90, \"8\": 59.90, \"10\": 69.90},\n      \"doces\": {\"4\": 46.90, \"6\": 59.90, \"8\": 69.90}\n    },\n    \"bebidas\": {\n      \"coca_2l_original\": {\"nome\": \"Coca-Cola 2L Original\", \"preco\": 15.90},\n      \"coca_2l_zero\": {\"nome\": \"Coca-Cola 2L Zero\", \"preco\": 15.90},\n      \"coca_1_5l_original\": {\"nome\": \"Coca-Cola 1,5L Original\", \"preco\": 12.90},\n      \"coca_1_5l_zero\": {\"nome\": \"Coca-Cola 1,5L Zero\", \"preco\": 12.90},\n      \"guarana_2l\": {\"nome\": \"Guaraná Kuat 2L\", \"preco\": 11.00},\n      \"mate_1l\": {\"nome\": \"Mate Couro 1L\", \"preco\": 9.00}\n    },\n    \"combos\": {\n      \"combo_6\": {\"pizza_6_fatias + mate_1l\": 55.90},\n      \"combo_10\": {\"pizza_10_fatias + mate_2l\": 59.90}\n    }\n  },\n\n  \"ferramentas_COMO_USAR\": {\n    \"CALCULADORA\": {\n      \"usar_para\": \"QUALQUER operação matemática\",\n      \"exemplos\": [\"49.90 * 2\", \"81.70 + 7.50\", \"100 - 89.20\"],\n      \"NUNCA\": \"Calcular manualmente\"\n    },\n    \"FRETE\": {\n      \"usar_para\": \"Calcular taxa de entrega\",\n      \"parametros_obrigatorios\": [\"rua\", \"numero\", \"bairro\", \"nome_do_cliente\", \"remotejid\", \"frete: 'frete'\"],\n      \"NUNCA\": \"Usar valor fixo\"\n    },\n    \"ATUALIZA_ENDERECO\": {\n      \"usar_para\": \"Salvar endereço após calcular frete\",\n      \"quando\": \"Imediatamente após FRETE\"\n    },\n    \"ATUALIZA_PEDIDO\": {\n      \"usar_para\": \"Registrar pedido completo\",\n      \"quando\": \"Antes da confirmação final\",\n      \"formato\": \"JSON válido\"\n    }\n  },\n\n  \"PROIBICOES_CRITICAS\": [\n    \"❌ NUNCA listar sabores em texto na primeira mensagem\",\n    \"❌ NUNCA enviar cardápio descritivo\",\n    \"❌ NUNCA usar markdown nos links: ![](url)\",\n    \"❌ NUNCA calcular sem CALCULADORA\",\n    \"❌ NUNCA usar frete fixo sem FRETE\",\n    \"❌ NUNCA pular up-sell de bebidas\",\n    \"❌ NUNCA confirmar sem ATUALIZA_PEDIDO\",\n    \"❌ NUNCA pular etapas\",\n    \"❌ NUNCA assumir dados\",\n    \"❌ NUNCA inventar preços ou produtos\"\n  ],\n\n  \"CHECKLIST_FINAL\": [\n    \"✅ Primeira mensagem enviou 4 links (sem markdown)?\",\n    \"✅ Up-sell de bebidas foi oferecido?\",\n    \"✅ Todos os cálculos usaram CALCULADORA?\",\n    \"✅ Se entrega: FRETE foi calculado?\",\n    \"✅ ATUALIZA_PEDIDO foi executado?\",\n    \"✅ Confirmação final está completa?\"\n  ]\n}\n",
+          "maxIterations": 30,
+          "returnIntermediateSteps": true,
+          "passthroughBinaryImages": true
+        }
+      },
+      "id": "2cca1560-6f56-44ce-838c-e5dcdd35c46a",
+      "name": "Atendente",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        4224,
+        1104
+      ],
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "name": "atualiza_endereco",
+        "description": "=Use essa tool para cadastrar e atualizar o endereço do cliente",
+        "workflowId": {
+          "__rl": true,
+          "value": "uBF6TYAtowHlfsCn",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/uBF6TYAtowHlfsCn"
+        },
+        "fields": {
+          "values": [
+            {
+              "name": "Evento",
+              "stringValue": "atualiza_endereco"
+            },
+            {
+              "name": "Remotejid",
+              "stringValue": "={{ $('Dados').item.json.Telefone }}"
+            }
+          ]
+        },
+        "jsonSchemaExample": ""
+      },
+      "id": "64045829-d85d-4f77-80c0-3dfcf5a41fe0",
+      "name": "atualiza_endereco",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        4400,
+        1568
+      ]
+    },
+    {
+      "parameters": {
+        "name": "atualiza_pedido",
+        "description": "=Use essa tool para cadastrar ou atualizar o pedido do cliente",
+        "workflowId": {
+          "__rl": true,
+          "value": "uBF6TYAtowHlfsCn",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/uBF6TYAtowHlfsCn"
+        },
+        "fields": {
+          "values": [
+            {
+              "name": "Evento",
+              "stringValue": "atualiza_pedido"
+            },
+            {
+              "name": "Remotejid",
+              "stringValue": "={{ $('Dados').item.json.Telefone }}"
+            }
+          ]
+        },
+        "jsonSchemaExample": ""
+      },
+      "id": "3bcf11e1-3805-4eaa-bcce-9e038de055f1",
+      "name": "atualiza_pedido",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        4544,
+        1568
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Use to perform detailed calculations and validation for delivery operations. \nDoes not fetch data or modify database - only processes and validates numbers step-by-step.\nUse when complex math, cost calculations, or time estimations are needed.\nAlways show work: validate inputs → calculate each component → sum total → verify result."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        4656,
+        1568
+      ],
+      "id": "41436389-3863-4b23-9d30-11b9ec133d76",
+      "name": "Think1"
+    },
+    {
+      "parameters": {
+        "description": "use essa ferramente para calcular o frete do cliente",
+        "workflowId": {
+          "__rl": true,
+          "value": "JjoOBkCNAvyi55vz",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/JjoOBkCNAvyi55vz",
+          "cachedResultName": "Calcular Frete por Distância (Raio) - Montes Claros"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "rua": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('rua', `Envie a rua do cliente`, 'string') }}",
+            "bairro ": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('bairro_', `envie o bairro do cliente`, 'string') }}",
+            "número": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('n_mero', `envie o numero da casa do cliente`, 'string') }}",
+            "nome do cliente": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('nome_do_cliente', `envie o nome do cliente`, 'string') }}",
+            "remotejid": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('remotejid', `envie o remotejid do cliente`, 'string') }}",
+            "frete": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('frete', `envie : \"frete\"`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "rua",
+              "displayName": "rua",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "bairro ",
+              "displayName": "bairro ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "número",
+              "displayName": "número",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "nome do cliente",
+              "displayName": "nome do cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "remotejid",
+              "displayName": "remotejid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "frete",
+              "displayName": "frete",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        4288,
+        1568
+      ],
+      "id": "f587165a-481f-432c-b0a6-98770f01e3c5",
+      "name": "frete"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1573LNs9fBpvHI8L1NTF94oF1arCYZdxmQE6yzY5K53A",
+          "mode": "list",
+          "cachedResultName": "pizzaria",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1573LNs9fBpvHI8L1NTF94oF1arCYZdxmQE6yzY5K53A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Página1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1573LNs9fBpvHI8L1NTF94oF1arCYZdxmQE6yzY5K53A/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        4656,
+        1712
+      ],
+      "id": "fed871fa-0a30-4929-ae9b-464100361fe1",
+      "name": "cardapio",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UVUDylBdFXVIOOQ7",
+          "name": "Google iamoreira"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Atendente",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculadora": {
+      "ai_tool": [
+        [
+          {
+            "node": "Atendente",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Atendente",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atendente": {
+      "main": [
+        []
+      ]
+    },
+    "atualiza_endereco": {
+      "ai_tool": [
+        [
+          {
+            "node": "Atendente",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "atualiza_pedido": {
+      "ai_tool": [
+        [
+          {
+            "node": "Atendente",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Atendente",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "frete": {
+      "ai_tool": [
+        [
+          {
+            "node": "Atendente",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cardapio": {
+      "ai_tool": [
+        [
+          {
+            "node": "Atendente",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2ea7b7eafef851237f746b35e270223c10a4da28f0386336f9f1c7cb434929a4"
+  }
+}
