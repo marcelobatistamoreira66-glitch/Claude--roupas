@@ -1,5 +1,5 @@
 {
-  "name": "Calcular Frete por Endereço - Montes Claros",
+  "name": "Calcular Frete por Distância (Raio) - Montes Claros",
   "nodes": [
     {
       "parameters": {
@@ -18,7 +18,7 @@
     {
       "parameters": {
         "mode": "runOnceForAllItems",
-        "jsCode": "// Recebe os dados do endereço\nconst rua = $input.item.json.rua || '';\nconst numero = $input.item.json.numero || '';\nconst bairro = $input.item.json.bairro || '';\nconst cidade = 'Montes Claros';\nconst estado = 'MG';\n\n// Validação básica\nif (!rua || !numero || !bairro) {\n  return {\n    sucesso: false,\n    erro: 'Dados incompletos. Envie: rua, numero e bairro',\n    mensagem: 'Por favor, informe o endereço completo: rua, número e bairro'\n  };\n}\n\n// Normaliza o nome do bairro (remove acentos, lowercase)\nconst normalizarTexto = (texto) => {\n  return texto\n    .toLowerCase()\n    .normalize('NFD')\n    .replace(/[\\u0300-\\u036f]/g, '')\n    .trim();\n};\n\nconst bairroNormalizado = normalizarTexto(bairro);\n\n// Retorna os dados processados\nreturn {\n  endereco_completo: `${rua}, ${numero} - ${bairro}, ${cidade}/${estado}`,\n  rua: rua.trim(),\n  numero: numero.toString().trim(),\n  bairro: bairro.trim(),\n  bairro_normalizado: bairroNormalizado,\n  cidade,\n  estado,\n  validado: true\n};"
+        "jsCode": "// Recebe os dados do endereço\nconst rua = $input.item.json.rua || '';\nconst numero = $input.item.json.numero || '';\nconst bairro = $input.item.json.bairro || '';\nconst cidade = 'Montes Claros';\nconst estado = 'MG';\nconst pais = 'Brasil';\n\n// Validação básica\nif (!rua || !numero || !bairro) {\n  return {\n    sucesso: false,\n    erro: 'Dados incompletos. Envie: rua, numero e bairro',\n    mensagem: 'Por favor, informe o endereço completo: rua, número e bairro'\n  };\n}\n\n// Monta o endereço completo para geocoding\nconst enderecoCompleto = `${rua}, ${numero}, ${bairro}, ${cidade}, ${estado}, ${pais}`;\n\n// Retorna os dados processados\nreturn {\n  endereco_completo: enderecoCompleto,\n  endereco_formatado: `${rua}, ${numero} - ${bairro}, ${cidade}/${estado}`,\n  rua: rua.trim(),\n  numero: numero.toString().trim(),\n  bairro: bairro.trim(),\n  cidade,\n  estado,\n  validado: true\n};"
       },
       "id": "validar-endereco",
       "name": "Validar Endereço",
@@ -28,14 +28,46 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "jsCode": "// Tabela de frete por bairro de Montes Claros, MG\n// VOCÊ PODE CUSTOMIZAR OS VALORES E ADICIONAR MAIS BAIRROS\nconst tabelaFrete = {\n  // Zona Central - Frete mais barato\n  'centro': 10.00,\n  'vila guilhermina': 10.00,\n  'todos os santos': 12.00,\n  'sao jose': 12.00,\n  'morrinhos': 12.00,\n  \n  // Zona Norte\n  'major prates': 15.00,\n  'jardim panorama': 15.00,\n  'sao luiz': 15.00,\n  'jardim sao luiz': 15.00,\n  'ibituruna': 18.00,\n  \n  // Zona Sul\n  'santo expedito': 15.00,\n  'sao judas tadeu': 15.00,\n  'cidade nova': 15.00,\n  'independencia': 15.00,\n  'melo': 18.00,\n  \n  // Zona Leste\n  'alterosa': 18.00,\n  'jardim alterosa': 18.00,\n  'planalto': 20.00,\n  'ciro dos anjos': 20.00,\n  \n  // Zona Oeste\n  'maracanã': 18.00,\n  'sumaré': 18.00,\n  'canelas': 20.00,\n  'santa rita': 20.00,\n  'vila atletico': 18.00,\n  \n  // Bairros mais distantes\n  'distrito industrial': 25.00,\n  'village do lago': 25.00,\n  'santa eugenia': 22.00,\n  'jardim brasil': 22.00,\n  'bela vista': 20.00,\n  'sagrada familia': 18.00,\n  'carmelo': 20.00,\n  'roxo verde': 22.00\n};\n\n// Pega os dados validados do node anterior\nconst item = $input.item.json;\n\n// Se houve erro na validação, retorna o erro\nif (item.sucesso === false) {\n  return item;\n}\n\nconst bairroNormalizado = item.bairro_normalizado;\n\n// Busca o valor do frete na tabela\nlet valorFrete = tabelaFrete[bairroNormalizado];\n\n// Se o bairro não está na tabela, usa valor padrão\nif (valorFrete === undefined) {\n  valorFrete = 20.00; // Valor padrão para bairros não cadastrados\n  \n  return {\n    sucesso: true,\n    endereco_completo: item.endereco_completo,\n    rua: item.rua,\n    numero: item.numero,\n    bairro: item.bairro,\n    cidade: item.cidade,\n    estado: item.estado,\n    valor_frete: valorFrete,\n    aviso: `Bairro \"${item.bairro}\" não encontrado na tabela. Aplicado valor padrão.`,\n    mensagem: `Frete calculado com sucesso! Valor: R$ ${valorFrete.toFixed(2)}`\n  };\n}\n\n// Retorna o resultado com o valor do frete\nreturn {\n  sucesso: true,\n  endereco_completo: item.endereco_completo,\n  rua: item.rua,\n  numero: item.numero,\n  bairro: item.bairro,\n  cidade: item.cidade,\n  estado: item.estado,\n  valor_frete: valorFrete,\n  mensagem: `Frete calculado com sucesso! Valor: R$ ${valorFrete.toFixed(2)}`\n};"
+        "url": "=https://nominatim.openstreetmap.org/search?q={{ encodeURIComponent($json.endereco_completo) }}&format=json&limit=1",
+        "options": {
+          "timeout": 10000
+        },
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "n8n-workflow-frete-calculator/1.0"
+            }
+          ]
+        }
       },
-      "id": "calcular-frete",
-      "name": "Calcular Frete por Bairro",
+      "id": "buscar-coordenadas",
+      "name": "Buscar Coordenadas (Geocoding)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Pega os dados do node anterior\nconst input = $input.item.json;\nconst validacaoNode = $('Validar Endereço').item.json;\n\n// Verifica se encontrou coordenadas\nif (!input || !Array.isArray(input) || input.length === 0) {\n  return {\n    sucesso: false,\n    erro: 'Endereço não encontrado',\n    mensagem: 'Não foi possível encontrar as coordenadas deste endereço. Verifique se o endereço está correto.',\n    endereco_fornecido: validacaoNode.endereco_formatado\n  };\n}\n\n// Pega as coordenadas encontradas\nconst resultado = input[0];\nconst latitudeCliente = parseFloat(resultado.lat);\nconst longitudeCliente = parseFloat(resultado.lon);\n\n// ⚙️ CONFIGURE AQUI AS COORDENADAS DA SUA LOJA/ORIGEM\n// Coordenadas padrão: Centro de Montes Claros, MG\nconst ORIGEM_LATITUDE = -16.7285;  // ← ALTERE AQUI\nconst ORIGEM_LONGITUDE = -43.8621; // ← ALTERE AQUI\n\n// Função Haversine para calcular distância entre dois pontos\nfunction calcularDistancia(lat1, lon1, lat2, lon2) {\n  const R = 6371; // Raio da Terra em km\n  const dLat = (lat2 - lat1) * Math.PI / 180;\n  const dLon = (lon2 - lon1) * Math.PI / 180;\n  \n  const a = \n    Math.sin(dLat/2) * Math.sin(dLat/2) +\n    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *\n    Math.sin(dLon/2) * Math.sin(dLon/2);\n  \n  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));\n  const distancia = R * c;\n  \n  return distancia;\n}\n\n// Calcula a distância\nconst distanciaKm = calcularDistancia(\n  ORIGEM_LATITUDE,\n  ORIGEM_LONGITUDE,\n  latitudeCliente,\n  longitudeCliente\n);\n\n// Retorna os dados com as coordenadas e distância\nreturn {\n  ...validacaoNode,\n  latitude: latitudeCliente,\n  longitude: longitudeCliente,\n  distancia_km: parseFloat(distanciaKm.toFixed(2)),\n  origem_lat: ORIGEM_LATITUDE,\n  origem_lng: ORIGEM_LONGITUDE,\n  endereco_geocodificado: resultado.display_name\n};"
+      },
+      "id": "calcular-distancia",
+      "name": "Calcular Distância (Haversine)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [650, 300]
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Pega os dados do node anterior\nconst item = $input.item.json;\n\n// Se houve erro, retorna\nif (item.sucesso === false) {\n  return item;\n}\n\nconst distanciaKm = item.distancia_km;\n\n// ⚙️ TABELA DE PREÇOS POR DISTÂNCIA (RAIO)\n// VOCÊ PODE CUSTOMIZAR OS VALORES E AS FAIXAS\nconst tabelaFretePorDistancia = [\n  { ate_km: 2, valor: 10.00, descricao: 'Até 2 km' },\n  { ate_km: 5, valor: 15.00, descricao: '2 a 5 km' },\n  { ate_km: 8, valor: 20.00, descricao: '5 a 8 km' },\n  { ate_km: 12, valor: 25.00, descricao: '8 a 12 km' },\n  { ate_km: 15, valor: 30.00, descricao: '12 a 15 km' },\n  { ate_km: 20, valor: 35.00, descricao: '15 a 20 km' },\n  { ate_km: 999, valor: 40.00, descricao: 'Acima de 20 km' }\n];\n\n// Encontra o valor do frete baseado na distância\nlet valorFrete = 40.00; // Valor padrão\nlet faixaDescricao = 'Acima de 20 km';\n\nfor (const faixa of tabelaFretePorDistancia) {\n  if (distanciaKm <= faixa.ate_km) {\n    valorFrete = faixa.valor;\n    faixaDescricao = faixa.descricao;\n    break;\n  }\n}\n\n// Retorna o resultado completo\nreturn {\n  sucesso: true,\n  mensagem: `Frete calculado com sucesso! Valor: R$ ${valorFrete.toFixed(2)}`,\n  endereco_completo: item.endereco_formatado,\n  rua: item.rua,\n  numero: item.numero,\n  bairro: item.bairro,\n  cidade: item.cidade,\n  estado: item.estado,\n  valor_frete: valorFrete,\n  distancia_km: distanciaKm,\n  faixa_distancia: faixaDescricao,\n  coordenadas: {\n    cliente_lat: item.latitude,\n    cliente_lng: item.longitude,\n    origem_lat: item.origem_lat,\n    origem_lng: item.origem_lng\n  }\n};"
+      },
+      "id": "calcular-frete",
+      "name": "Calcular Frete por Distância",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
     },
     {
       "parameters": {
@@ -64,12 +96,20 @@
             {
               "name": "estado",
               "value": "={{ $json.estado }}"
+            },
+            {
+              "name": "faixa_distancia",
+              "value": "={{ $json.faixa_distancia }}"
             }
           ],
           "number": [
             {
               "name": "valor_frete",
               "value": "={{ $json.valor_frete }}"
+            },
+            {
+              "name": "distancia_km",
+              "value": "={{ $json.distancia_km }}"
             }
           ]
         },
@@ -79,7 +119,7 @@
       "name": "Set - Retorno de Sucesso",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.2,
-      "position": [850, 300]
+      "position": [1250, 300]
     },
     {
       "parameters": {
@@ -91,7 +131,7 @@
       "name": "Webhook Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1050, 300]
+      "position": [1450, 300]
     }
   ],
   "connections": {
@@ -110,14 +150,36 @@
       "main": [
         [
           {
-            "node": "Calcular Frete por Bairro",
+            "node": "Buscar Coordenadas (Geocoding)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Calcular Frete por Bairro": {
+    "Buscar Coordenadas (Geocoding)": {
+      "main": [
+        [
+          {
+            "node": "Calcular Distância (Haversine)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Distância (Haversine)": {
+      "main": [
+        [
+          {
+            "node": "Calcular Frete por Distância",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular Frete por Distância": {
       "main": [
         [
           {
@@ -147,6 +209,6 @@
   "staticData": null,
   "tags": [],
   "triggerCount": 0,
-  "updatedAt": "2025-11-14T00:00:00.000Z",
-  "versionId": "1"
+  "updatedAt": "2025-11-15T00:00:00.000Z",
+  "versionId": "2"
 }

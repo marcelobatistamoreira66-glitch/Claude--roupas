@@ -1,8 +1,13 @@
 {
+  "descricao": "Exemplos de requisições para o workflow de cálculo de frete por distância (raio)",
+  "versao": "2.0",
+  "metodo": "POST",
+  "url_webhook": "SUBSTITUA_PELA_URL_DO_SEU_WEBHOOK_N8N",
+
   "exemplos_requisicao": [
     {
-      "descricao": "Endereço no Centro (frete mais barato)",
-      "metodo": "POST",
+      "id": 1,
+      "descricao": "Endereço no Centro (próximo - até 2km)",
       "body": {
         "rua": "Avenida Doutor Ruy Braga",
         "numero": "123",
@@ -10,13 +15,19 @@
       },
       "resposta_esperada": {
         "sucesso": true,
+        "mensagem": "Frete calculado com sucesso! Valor: R$ 10.00",
+        "endereco_completo": "Avenida Doutor Ruy Braga, 123 - Centro, Montes Claros/MG",
+        "bairro": "Centro",
+        "cidade": "Montes Claros",
+        "estado": "MG",
         "valor_frete": 10,
-        "mensagem": "Frete calculado com sucesso! Valor: R$ 10.00"
+        "distancia_km": 1.5,
+        "faixa_distancia": "Até 2 km"
       }
     },
     {
-      "descricao": "Endereço em São Luiz",
-      "metodo": "POST",
+      "id": 2,
+      "descricao": "Endereço em São Luiz (médio - 2 a 5km)",
       "body": {
         "rua": "Rua Doutor Veloso",
         "numero": "456",
@@ -25,26 +36,56 @@
       "resposta_esperada": {
         "sucesso": true,
         "valor_frete": 15,
-        "mensagem": "Frete calculado com sucesso! Valor: R$ 15.00"
+        "distancia_km": 3.2,
+        "faixa_distancia": "2 a 5 km"
       }
     },
     {
-      "descricao": "Endereço no Ibituruna",
-      "metodo": "POST",
+      "id": 3,
+      "descricao": "Endereço no Ibituruna (distante - 8 a 12km)",
       "body": {
-        "rua": "Rua A",
+        "rua": "Avenida Zelinda Fonseca",
         "numero": "789",
         "bairro": "Ibituruna"
       },
       "resposta_esperada": {
         "sucesso": true,
-        "valor_frete": 18,
-        "mensagem": "Frete calculado com sucesso! Valor: R$ 18.00"
+        "valor_frete": 25,
+        "distancia_km": 8.5,
+        "faixa_distancia": "8 a 12 km"
       }
     },
     {
-      "descricao": "Endereço no Village do Lago (mais distante)",
-      "metodo": "POST",
+      "id": 4,
+      "descricao": "Endereço em Morrinhos",
+      "body": {
+        "rua": "Rua João Pinheiro",
+        "numero": "500",
+        "bairro": "Morrinhos"
+      },
+      "resposta_esperada": {
+        "sucesso": true,
+        "valor_frete": 15,
+        "cidade": "Montes Claros"
+      }
+    },
+    {
+      "id": 5,
+      "descricao": "Endereço na Todos os Santos",
+      "body": {
+        "rua": "Rua Santos Dumont",
+        "numero": "250",
+        "bairro": "Todos os Santos"
+      },
+      "resposta_esperada": {
+        "sucesso": true,
+        "cidade": "Montes Claros",
+        "estado": "MG"
+      }
+    },
+    {
+      "id": 6,
+      "descricao": "Endereço no Village do Lago (muito distante)",
       "body": {
         "rua": "Avenida Principal",
         "numero": "1000",
@@ -52,41 +93,14 @@
       },
       "resposta_esperada": {
         "sucesso": true,
-        "valor_frete": 25,
-        "mensagem": "Frete calculado com sucesso! Valor: R$ 25.00"
+        "valor_frete": 35,
+        "distancia_km": 18.0,
+        "faixa_distancia": "15 a 20 km"
       }
     },
     {
-      "descricao": "Bairro não cadastrado (valor padrão)",
-      "metodo": "POST",
-      "body": {
-        "rua": "Rua Teste",
-        "numero": "100",
-        "bairro": "Bairro Novo"
-      },
-      "resposta_esperada": {
-        "sucesso": true,
-        "valor_frete": 20,
-        "aviso": "Bairro \"Bairro Novo\" não encontrado na tabela. Aplicado valor padrão."
-      }
-    },
-    {
-      "descricao": "Teste com bairro com acentos (deve normalizar)",
-      "metodo": "POST",
-      "body": {
-        "rua": "Rua São João",
-        "numero": "200",
-        "bairro": "São José"
-      },
-      "resposta_esperada": {
-        "sucesso": true,
-        "valor_frete": 12,
-        "mensagem": "Frete calculado com sucesso! Valor: R$ 12.00"
-      }
-    },
-    {
-      "descricao": "Erro: Dados incompletos (sem bairro)",
-      "metodo": "POST",
+      "id": 7,
+      "descricao": "ERRO: Dados incompletos (sem bairro)",
       "body": {
         "rua": "Rua Teste",
         "numero": "100"
@@ -98,8 +112,8 @@
       }
     },
     {
-      "descricao": "Erro: Dados incompletos (sem número)",
-      "metodo": "POST",
+      "id": 8,
+      "descricao": "ERRO: Dados incompletos (sem número)",
       "body": {
         "rua": "Rua Teste",
         "bairro": "Centro"
@@ -108,16 +122,102 @@
         "sucesso": false,
         "erro": "Dados incompletos. Envie: rua, numero e bairro"
       }
+    },
+    {
+      "id": 9,
+      "descricao": "ERRO: Endereço inexistente",
+      "body": {
+        "rua": "Rua Totalmente Inexistente XYZ 999",
+        "numero": "999",
+        "bairro": "Bairro Fantasma"
+      },
+      "resposta_esperada": {
+        "sucesso": false,
+        "erro": "Endereço não encontrado",
+        "mensagem": "Não foi possível encontrar as coordenadas deste endereço. Verifique se o endereço está correto."
+      }
+    },
+    {
+      "id": 10,
+      "descricao": "Endereço com caracteres especiais",
+      "body": {
+        "rua": "Avenida Osmane Barbosa",
+        "numero": "5555",
+        "bairro": "São José"
+      },
+      "resposta_esperada": {
+        "sucesso": true,
+        "bairro": "São José",
+        "cidade": "Montes Claros"
+      }
     }
   ],
+
   "curl_examples": {
-    "basico": "curl -X POST 'SUA_URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Avenida Doutor Ruy Braga\", \"numero\": \"123\", \"bairro\": \"Centro\"}'",
-    "com_acentos": "curl -X POST 'SUA_URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Rua São João\", \"numero\": \"200\", \"bairro\": \"São José\"}'",
-    "bairro_distante": "curl -X POST 'SUA_URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Avenida Principal\", \"numero\": \"1000\", \"bairro\": \"Village do Lago\"}'"
+    "descricao": "Exemplos usando cURL (substitua URL_DO_WEBHOOK pela URL real)",
+
+    "exemplo_1_centro": "curl -X POST 'URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Avenida Doutor Ruy Braga\", \"numero\": \"123\", \"bairro\": \"Centro\"}'",
+
+    "exemplo_2_sao_luiz": "curl -X POST 'URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Rua Doutor Veloso\", \"numero\": \"456\", \"bairro\": \"São Luiz\"}'",
+
+    "exemplo_3_ibituruna": "curl -X POST 'URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Avenida Zelinda Fonseca\", \"numero\": \"789\", \"bairro\": \"Ibituruna\"}'",
+
+    "exemplo_4_village": "curl -X POST 'URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Avenida Principal\", \"numero\": \"1000\", \"bairro\": \"Village do Lago\"}'",
+
+    "exemplo_erro_dados_incompletos": "curl -X POST 'URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Rua Teste\", \"numero\": \"100\"}'",
+
+    "exemplo_erro_endereco_invalido": "curl -X POST 'URL_DO_WEBHOOK' -H 'Content-Type: application/json' -d '{\"rua\": \"Rua Inexistente XYZ\", \"numero\": \"999\", \"bairro\": \"Bairro Fantasma\"}'"
   },
-  "instrucoes": {
-    "passo_1": "Substitua 'SUA_URL_DO_WEBHOOK' pela URL real que aparece no node Webhook do n8n",
-    "passo_2": "Execute qualquer um dos comandos curl acima para testar",
-    "passo_3": "Ou use o Postman/Insomnia importando os exemplos acima"
+
+  "postman_insomnia": {
+    "instrucoes": [
+      "1. Crie uma nova requisição POST",
+      "2. Cole a URL do webhook do n8n",
+      "3. Em Headers, adicione: Content-Type: application/json",
+      "4. Em Body, selecione 'raw' e 'JSON'",
+      "5. Cole um dos exemplos de body acima",
+      "6. Clique em Send"
+    ]
+  },
+
+  "javascript_fetch": {
+    "descricao": "Exemplo de integração usando JavaScript/Fetch API",
+    "codigo": "async function calcularFrete(rua, numero, bairro) {\n  const url = 'URL_DO_WEBHOOK';\n  \n  try {\n    const response = await fetch(url, {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({\n        rua: rua,\n        numero: numero,\n        bairro: bairro\n      })\n    });\n    \n    const resultado = await response.json();\n    \n    if (resultado.sucesso) {\n      console.log(`Frete: R$ ${resultado.valor_frete}`);\n      console.log(`Distância: ${resultado.distancia_km} km`);\n      return resultado;\n    } else {\n      console.error('Erro:', resultado.mensagem);\n      return null;\n    }\n  } catch (error) {\n    console.error('Erro na requisição:', error);\n    return null;\n  }\n}\n\n// Uso:\ncalcularFrete('Avenida Doutor Ruy Braga', '123', 'Centro');"
+  },
+
+  "python_requests": {
+    "descricao": "Exemplo de integração usando Python/Requests",
+    "codigo": "import requests\nimport json\n\ndef calcular_frete(rua, numero, bairro):\n    url = 'URL_DO_WEBHOOK'\n    \n    payload = {\n        'rua': rua,\n        'numero': numero,\n        'bairro': bairro\n    }\n    \n    try:\n        response = requests.post(url, json=payload)\n        resultado = response.json()\n        \n        if resultado.get('sucesso'):\n            print(f\"Frete: R$ {resultado['valor_frete']}\")\n            print(f\"Distância: {resultado['distancia_km']} km\")\n            return resultado\n        else:\n            print(f\"Erro: {resultado.get('mensagem')}\")\n            return None\n    except Exception as e:\n        print(f\"Erro na requisição: {e}\")\n        return None\n\n# Uso:\ncalcular_frete('Avenida Doutor Ruy Braga', '123', 'Centro')"
+  },
+
+  "php_curl": {
+    "descricao": "Exemplo de integração usando PHP/cURL",
+    "codigo": "<?php\nfunction calcularFrete($rua, $numero, $bairro) {\n    $url = 'URL_DO_WEBHOOK';\n    \n    $data = array(\n        'rua' => $rua,\n        'numero' => $numero,\n        'bairro' => $bairro\n    );\n    \n    $ch = curl_init($url);\n    curl_setopt($ch, CURLOPT_POST, 1);\n    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));\n    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));\n    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);\n    \n    $response = curl_exec($ch);\n    curl_close($ch);\n    \n    $resultado = json_decode($response, true);\n    \n    if ($resultado['sucesso']) {\n        echo \"Frete: R$ \" . $resultado['valor_frete'] . \"\\n\";\n        echo \"Distância: \" . $resultado['distancia_km'] . \" km\\n\";\n        return $resultado;\n    } else {\n        echo \"Erro: \" . $resultado['mensagem'] . \"\\n\";\n        return null;\n    }\n}\n\n// Uso:\ncalcularFrete('Avenida Doutor Ruy Braga', '123', 'Centro');\n?>"
+  },
+
+  "observacoes": {
+    "importante": [
+      "Substitua 'URL_DO_WEBHOOK' pela URL real gerada pelo n8n",
+      "A API Nominatim tem limite de 1 requisição por segundo",
+      "Sempre valide os dados antes de enviar",
+      "Implemente tratamento de erros na sua aplicação",
+      "Considere implementar cache para endereços frequentes"
+    ],
+    "campos_obrigatorios": [
+      "rua (string)",
+      "numero (string ou number)",
+      "bairro (string)"
+    ],
+    "campos_retornados": [
+      "sucesso (boolean)",
+      "mensagem (string)",
+      "endereco_completo (string)",
+      "bairro (string)",
+      "cidade (string)",
+      "estado (string)",
+      "valor_frete (number)",
+      "distancia_km (number)",
+      "faixa_distancia (string)"
+    ]
   }
 }
