@@ -1,0 +1,356 @@
+{
+  "name": "Enviar Imagem Mega API - Híbrido (URL + Fallback Base64)",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        500
+      ],
+      "id": "trigger-hibrido",
+      "name": "Inicio"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "url-var",
+              "name": "imageUrl",
+              "value": "https://res.cloudinary.com/dqiextr5u/image/upload/v1763179608/Imagem_do_WhatsApp_de_2025-11-13_%C3%A0_s_20.11.43_412193f7_buypot.jpg",
+              "type": "string"
+            },
+            {
+              "id": "phone-var",
+              "name": "destino",
+              "value": "5511999999999",
+              "type": "string"
+            },
+            {
+              "id": "caption-var",
+              "name": "legenda",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        500
+      ],
+      "id": "set-config",
+      "name": "Configuracao"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apistart02.megaapi.com.br/rest/sendMessage/megastart-M37aHjihk11/mediaUrl",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer M37aHjihk11"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messageData\": {\n    \"to\": \"{{ $json.destino }}\",\n    \"url\": \"{{ $json.imageUrl }}\",\n    \"fileName\": \"imagem.jpg\",\n    \"type\": \"image\",\n    \"caption\": \"{{ $json.legenda }}\",\n    \"mimeType\": \"image/jpeg\"\n  }\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        680,
+        500
+      ],
+      "id": "try-url-first",
+      "name": "Tentar Envio via URL",
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-success",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "pending",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "check-error",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isEmpty"
+              }
+            }
+          ],
+          "combineOperation": "all"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        900,
+        500
+      ],
+      "id": "check-url-success",
+      "name": "URL Funcionou?"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Configuracao').item.json.imageUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        680
+      ],
+      "id": "download-for-base64",
+      "name": "Download Imagem"
+    },
+    {
+      "parameters": {
+        "jsCode": "const binaryData = items[0].binary.data;\nconst base64Data = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst base64String = base64Data.toString('base64');\n\nconst config = $('Configuracao').item.json;\n\nreturn [{\n  json: {\n    base64: base64String,\n    mimeType: binaryData.mimeType || 'image/jpeg',\n    fileName: binaryData.fileName || 'imagem.jpg',\n    destino: config.destino,\n    legenda: config.legenda || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        680
+      ],
+      "id": "to-base64",
+      "name": "Para Base64"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apistart02.megaapi.com.br/rest/sendMessage/megastart-M37aHjihk11/media",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer M37aHjihk11"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messageData\": {\n    \"to\": \"{{ $json.destino }}\",\n    \"mediaBase64\": \"{{ $json.base64 }}\",\n    \"fileName\": \"{{ $json.fileName }}\",\n    \"type\": \"image\",\n    \"caption\": \"{{ $json.legenda }}\",\n    \"mimeType\": \"{{ $json.mimeType }}\"\n  }\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1560,
+        680
+      ],
+      "id": "send-base64",
+      "name": "Enviar Base64"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "method-used",
+              "name": "metodo_usado",
+              "value": "URL",
+              "type": "string"
+            },
+            {
+              "id": "status-msg",
+              "name": "mensagem",
+              "value": "Enviado com sucesso via URL",
+              "type": "string"
+            },
+            {
+              "id": "response-url",
+              "name": "resposta",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        380
+      ],
+      "id": "success-url",
+      "name": "Sucesso via URL"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "method-base64",
+              "name": "metodo_usado",
+              "value": "Base64",
+              "type": "string"
+            },
+            {
+              "id": "msg-base64",
+              "name": "mensagem",
+              "value": "Enviado com sucesso via Base64 (fallback)",
+              "type": "string"
+            },
+            {
+              "id": "resp-base64",
+              "name": "resposta",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1780,
+        680
+      ],
+      "id": "success-base64",
+      "name": "Sucesso via Base64"
+    }
+  ],
+  "connections": {
+    "Inicio": {
+      "main": [
+        [
+          {
+            "node": "Configuracao",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuracao": {
+      "main": [
+        [
+          {
+            "node": "Tentar Envio via URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tentar Envio via URL": {
+      "main": [
+        [
+          {
+            "node": "URL Funcionou?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL Funcionou?": {
+      "main": [
+        [
+          {
+            "node": "Sucesso via URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Imagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Imagem": {
+      "main": [
+        [
+          {
+            "node": "Para Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Para Base64": {
+      "main": [
+        [
+          {
+            "node": "Enviar Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Base64": {
+      "main": [
+        [
+          {
+            "node": "Sucesso via Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["mega-api", "whatsapp", "hibrido"],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-15T00:00:00.000Z",
+  "versionId": "1"
+}

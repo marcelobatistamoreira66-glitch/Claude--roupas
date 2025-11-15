@@ -1,0 +1,221 @@
+{
+  "name": "Enviar Imagem Mega API - Upload Direto",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        400
+      ],
+      "id": "trigger-002",
+      "name": "Inicio",
+      "webhookId": ""
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "url-assignment",
+              "name": "imageUrl",
+              "value": "https://res.cloudinary.com/dqiextr5u/image/upload/v1763179608/Imagem_do_WhatsApp_de_2025-11-13_%C3%A0_s_20.11.43_412193f7_buypot.jpg",
+              "type": "string"
+            },
+            {
+              "id": "phone-assignment",
+              "name": "destino",
+              "value": "5511999999999",
+              "type": "string"
+            },
+            {
+              "id": "caption-assignment",
+              "name": "legenda",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        400
+      ],
+      "id": "config-vars",
+      "name": "Configurar Dados"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageUrl }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 10
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "data"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        680,
+        400
+      ],
+      "id": "download-img",
+      "name": "Baixar Imagem HTTP"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pegar os dados binários da imagem\nconst binaryData = items[0].binary.data;\n\n// Converter para base64\nconst base64Data = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst base64String = base64Data.toString('base64');\n\n// Pegar informações da imagem\nconst mimeType = binaryData.mimeType || 'image/jpeg';\nconst fileName = binaryData.fileName || 'imagem.jpg';\n\n// Retornar os dados processados\nreturn [\n  {\n    json: {\n      base64: base64String,\n      mimeType: mimeType,\n      fileName: fileName,\n      destino: items[0].json.destino,\n      legenda: items[0].json.legenda || ''\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        400
+      ],
+      "id": "convert-base64",
+      "name": "Converter Base64"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apistart02.megaapi.com.br/rest/sendMessage/megastart-M37aHjihk11/media",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer M37aHjihk11"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messageData\": {\n    \"to\": \"{{ $json.destino }}\",\n    \"mediaBase64\": \"{{ $json.base64 }}\",\n    \"fileName\": \"{{ $json.fileName }}\",\n    \"type\": \"image\",\n    \"caption\": \"{{ $json.legenda }}\",\n    \"mimeType\": \"{{ $json.mimeType }}\"\n  }\n}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        400
+      ],
+      "id": "send-mega",
+      "name": "Enviar Mega API"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "success-msg",
+              "name": "status",
+              "value": "=Imagem enviada com sucesso para {{ $('Configurar Dados').item.json.destino }}",
+              "type": "string"
+            },
+            {
+              "id": "response-data",
+              "name": "resposta",
+              "value": "={{ $json }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1340,
+        400
+      ],
+      "id": "format-response",
+      "name": "Formatar Resposta"
+    }
+  ],
+  "connections": {
+    "Inicio": {
+      "main": [
+        [
+          {
+            "node": "Configurar Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configurar Dados": {
+      "main": [
+        [
+          {
+            "node": "Baixar Imagem HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar Imagem HTTP": {
+      "main": [
+        [
+          {
+            "node": "Converter Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Converter Base64": {
+      "main": [
+        [
+          {
+            "node": "Enviar Mega API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Mega API": {
+      "main": [
+        [
+          {
+            "node": "Formatar Resposta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["mega-api", "whatsapp", "imagem"],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-15T00:00:00.000Z",
+  "versionId": "1"
+}
