@@ -1,0 +1,162 @@
+{
+  "name": "Enviar Imagem Mega API - Simplificado",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "id": "trigger-001",
+      "name": "When clicking Test workflow",
+      "webhookId": ""
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "image-url-assignment",
+              "name": "imageUrl",
+              "value": "https://res.cloudinary.com/dqiextr5u/image/upload/v1763179608/Imagem_do_WhatsApp_de_2025-11-13_%C3%A0_s_20.11.43_412193f7_buypot.jpg",
+              "type": "string"
+            },
+            {
+              "id": "phone-assignment",
+              "name": "phoneNumber",
+              "value": "5511999999999",
+              "type": "string"
+            },
+            {
+              "id": "caption-assignment",
+              "name": "caption",
+              "value": "Sua imagem",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        300
+      ],
+      "id": "set-variables",
+      "name": "Definir Variaveis"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageUrl }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 10
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "imageBinary"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        680,
+        300
+      ],
+      "id": "download-image",
+      "name": "Download Imagem"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apistart02.megaapi.com.br/rest/sendMessage/megastart-M37aHjihk11/mediaUrl",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer M37aHjihk11"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messageData\": {\n    \"to\": \"{{ $('Definir Variaveis').item.json.phoneNumber }}\",\n    \"url\": \"{{ $('Definir Variaveis').item.json.imageUrl }}\",\n    \"fileName\": \"imagem.jpg\",\n    \"type\": \"image\",\n    \"caption\": \"{{ $('Definir Variaveis').item.json.caption }}\",\n    \"mimeType\": \"image/jpeg\"\n  }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        900,
+        300
+      ],
+      "id": "send-via-url",
+      "name": "Enviar via URL"
+    }
+  ],
+  "connections": {
+    "When clicking Test workflow": {
+      "main": [
+        [
+          {
+            "node": "Definir Variaveis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir Variaveis": {
+      "main": [
+        [
+          {
+            "node": "Download Imagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Imagem": {
+      "main": [
+        [
+          {
+            "node": "Enviar via URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-15T00:00:00.000Z",
+  "versionId": "1"
+}

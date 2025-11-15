@@ -1,0 +1,218 @@
+{
+  "name": "Enviar Imagem para Mega API",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "id": "manual-trigger-001",
+      "name": "Inicio Manual"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageUrl }}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true,
+              "maxRedirects": 5
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "imageData"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        460,
+        300
+      ],
+      "id": "http-download-image",
+      "name": "Baixar Imagem"
+    },
+    {
+      "parameters": {
+        "mode": "jsonToBinary",
+        "options": {
+          "mimeType": "={{ $json.imageData.mimeType }}",
+          "fileName": "={{ $json.imageData.fileName || 'image.jpg' }}",
+          "dataPropertyName": "imageData"
+        }
+      },
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ],
+      "id": "prepare-binary-data",
+      "name": "Preparar Dados Binarios"
+    },
+    {
+      "parameters": {
+        "operation": "toBase64",
+        "options": {
+          "dataPropertyName": "imageData"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        900,
+        300
+      ],
+      "id": "convert-to-base64",
+      "name": "Converter para Base64"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apistart02.megaapi.com.br/rest/sendMessage/megastart-M37aHjihk11/mediaUrl",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer M37aHjihk11"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messageData\": {\n    \"to\": \"{{ $json.phoneNumber }}\",\n    \"url\": \"{{ $json.imageUrl }}\",\n    \"fileName\": \"{{ $json.imageData.fileName || 'image.jpg' }}\",\n    \"type\": \"image\",\n    \"caption\": \"{{ $json.caption || '' }}\",\n    \"mimeType\": \"{{ $json.imageData.mimeType || 'image/jpeg' }}\"\n  }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        300
+      ],
+      "id": "send-to-mega-api-url",
+      "name": "Enviar para Mega API (URL)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apistart02.megaapi.com.br/rest/sendMessage/megastart-M37aHjihk11/media",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer M37aHjihk11"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"messageData\": {\n    \"to\": \"{{ $json.phoneNumber }}\",\n    \"mediaBase64\": \"{{ $json.base64Data }}\",\n    \"fileName\": \"{{ $json.imageData.fileName || 'image.jpg' }}\",\n    \"type\": \"image\",\n    \"caption\": \"{{ $json.caption || '' }}\",\n    \"mimeType\": \"{{ $json.imageData.mimeType || 'image/jpeg' }}\"\n  }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {
+              "followRedirects": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1120,
+        480
+      ],
+      "id": "send-to-mega-api-base64",
+      "name": "Enviar para Mega API (Base64)"
+    }
+  ],
+  "connections": {
+    "Inicio Manual": {
+      "main": [
+        [
+          {
+            "node": "Baixar Imagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar Imagem": {
+      "main": [
+        [
+          {
+            "node": "Preparar Dados Binarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Dados Binarios": {
+      "main": [
+        [
+          {
+            "node": "Converter para Base64",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Converter para Base64": {
+      "main": [
+        [
+          {
+            "node": "Enviar para Mega API (URL)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Enviar para Mega API (Base64)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-15T00:00:00.000Z",
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2ea7b7eafef851237f746b35e270223c10a4da28f0386336f9f1c7cb434929a4"
+  }
+}

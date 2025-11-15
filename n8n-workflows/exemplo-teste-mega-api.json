@@ -1,0 +1,112 @@
+{
+  "testes": [
+    {
+      "nome": "Teste 1 - Imagem Cloudinary (JPG)",
+      "dados": {
+        "imageUrl": "https://res.cloudinary.com/dqiextr5u/image/upload/v1763179608/Imagem_do_WhatsApp_de_2025-11-13_%C3%A0_s_20.11.43_412193f7_buypot.jpg",
+        "destino": "5511999999999",
+        "legenda": "Teste de envio via workflow n8n"
+      },
+      "esperado": {
+        "status": "success",
+        "mensagem_enviada": true
+      }
+    },
+    {
+      "nome": "Teste 2 - Imagem PNG",
+      "dados": {
+        "imageUrl": "https://exemplo.com/imagem-teste.png",
+        "destino": "5511987654321",
+        "legenda": "Imagem PNG de teste"
+      },
+      "esperado": {
+        "status": "success",
+        "mensagem_enviada": true
+      }
+    },
+    {
+      "nome": "Teste 3 - Sem legenda",
+      "dados": {
+        "imageUrl": "https://exemplo.com/produto.jpg",
+        "destino": "5511888888888",
+        "legenda": ""
+      },
+      "esperado": {
+        "status": "success",
+        "mensagem_enviada": true,
+        "caption_vazio": true
+      }
+    }
+  ],
+  "validacoes": {
+    "pre_envio": [
+      "Verificar se a URL da imagem é acessível",
+      "Validar formato do número de telefone (DDI + DDD + Número)",
+      "Confirmar que o mimeType está correto",
+      "Verificar tamanho da imagem (não muito grande)"
+    ],
+    "pos_envio": [
+      "Confirmar status 200 da API",
+      "Verificar messageId na resposta",
+      "Validar que success = true",
+      "Conferir se a mensagem chegou no WhatsApp"
+    ]
+  },
+  "checklist_debugging": [
+    {
+      "passo": "1. Verificar logs do nó 'Baixar Imagem HTTP'",
+      "o_que_verificar": "Se a imagem foi baixada com sucesso (status 200)",
+      "erro_comum": "Erro 404 ou timeout - URL inválida ou inacessível"
+    },
+    {
+      "passo": "2. Verificar logs do nó 'Converter Base64'",
+      "o_que_verificar": "Se o base64 foi gerado sem erros",
+      "erro_comum": "Dados binários não encontrados ou corrompidos"
+    },
+    {
+      "passo": "3. Verificar logs do nó 'Enviar Mega API'",
+      "o_que_verificar": "Status code da resposta e corpo da resposta",
+      "erro_comum": "401 (token inválido), 400 (dados inválidos), timeout"
+    },
+    {
+      "passo": "4. Verificar formato do número",
+      "o_que_verificar": "DDI + DDD + Número (ex: 5511999999999)",
+      "erro_comum": "Faltando DDI (55) ou formato incorreto"
+    }
+  ],
+  "curl_exemplo": {
+    "descricao": "Exemplo de teste via cURL (para debug)",
+    "comando": "curl -X POST 'https://apistart02.megaapi.com.br/rest/sendMessage/megastart-M37aHjihk11/mediaUrl' \\\n  -H 'Authorization: Bearer M37aHjihk11' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\n    \"messageData\": {\n      \"to\": \"5511999999999\",\n      \"url\": \"https://exemplo.com/imagem.jpg\",\n      \"fileName\": \"teste.jpg\",\n      \"type\": \"image\",\n      \"caption\": \"Teste via cURL\",\n      \"mimeType\": \"image/jpeg\"\n    }\n  }'"
+  },
+  "respostas_esperadas": {
+    "sucesso": {
+      "exemplo": {
+        "success": true,
+        "messageId": "3EB0XXXXXXXXXXXXXXXX",
+        "status": "sent"
+      }
+    },
+    "erro_autenticacao": {
+      "exemplo": {
+        "error": "Unauthorized",
+        "message": "Invalid token",
+        "statusCode": 401
+      }
+    },
+    "erro_numero_invalido": {
+      "exemplo": {
+        "error": "Bad Request",
+        "message": "Invalid phone number format",
+        "statusCode": 400
+      }
+    },
+    "erro_pending": {
+      "exemplo": {
+        "success": true,
+        "messageId": "3EB0XXXXXXXXXXXXXXXX",
+        "status": "pending"
+      },
+      "solucao": "Usar workflow com upload direto (base64) ao invés de URL"
+    }
+  }
+}
